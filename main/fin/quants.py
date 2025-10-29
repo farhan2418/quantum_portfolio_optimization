@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from finance.returns import weighted_mean_daily_returns
-from finance.finance_data_types import DATA_ARRAY, SERIES_ARRAY, FLOAT, INT, NUMERIC
+from fin.returns import weighted_mean_daily_returns
+from fin.finance_data_types import DATA_ARRAY, SERIES_ARRAY, FLOAT, INT, NUMERIC
 
 def weighted_mean_sum(
     means: SERIES_ARRAY[FLOAT], weights: SERIES_ARRAY[FLOAT]
@@ -36,4 +36,3 @@ def value_at_risk(
         raise ValueError("expected confidence level is between 0 and 1!")
     value_at_risk: FLOAT = investment * (mu - sigma * norm.ppf(1 - conf_interval))
     return value_at_risk
-    

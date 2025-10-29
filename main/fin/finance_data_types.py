@@ -16,7 +16,8 @@ from numpy.typing import NDarray
 
 
 ELEMENT_TYPE = TypeVar('ELEMENT_TYPE')
-STD_DATETIME = 
+
+STD_DATETIME = str | datetime
 STD_ARRAY: TypeAlias = NDarray[ELEMENT_TYPE] | List[ELEMENT_TYPE]
 DATA_ARRAY: TypeAlias = NDarray[ELEMENT_TYPE] | pd.DataFrame
 SERIES_ARRAY: TypeAlias = NDarray[ELEMENT_TYPE] | pd.Series

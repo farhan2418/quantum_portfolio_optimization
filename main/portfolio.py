@@ -35,6 +35,14 @@ from .fin.finance_data_types import (
     INT,
     DICT_LIST_PASS,
     NUMERIC,
-
-
+    STD_DATETIME,
 )
+
+from .fin.quants import (
+    weighted_mean_sum,
+    weighted_std,
+    weighted_mean_daily_returns,
+    sharpe_ratio,
+    value_at_risk
+)
+
