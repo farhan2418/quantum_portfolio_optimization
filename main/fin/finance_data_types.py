@@ -25,7 +25,7 @@ SERIES_DATA: TypeAlias = pd.Series | pd.DataFrame
 
 DICT_LIST_PASS: TypeAlias = DATA_ARRAY[ELEMENT_TYPE] | KeysView[ELEMENT_TYPE]
 
-ST_INT: TypeAlias = numbers.Integral
+INT_STD: TypeAlias = numbers.Integral
 FLOAT: TypeAlias = np.floating | float
 NUMERIC: TypeAlias = numbers.Real
 
