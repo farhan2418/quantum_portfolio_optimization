@@ -35,4 +35,4 @@ def value_at_risk(
     if conf_interval >= 1 or conf_interval <= 0:
         raise ValueError("expected confidence level is between 0 and 1!")
     value_at_risk: FLOAT = investment * (mu - sigma * norm.ppf(1 - conf_interval))
-    return value_at_risk
+    return value_at_risk 
