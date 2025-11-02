@@ -20,7 +20,7 @@ class Asset:
         self.name = name
         self.daily_return = self.comp_daily_returns()
         self.expected_return = self.comp_expected_return
-        self.volatility = self.volatility
+        self.volatility = self.comp_volatility()
     
     def comp_daily_returns(self) -> SERIES_DATA:
         return daily_returns(self.data)

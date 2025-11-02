@@ -12,9 +12,9 @@ class Stock(Asset):
     cov_matrix: STD_ARRAY | None
     rsquared: FLOAT | None
 
-    def __int__(self, investmentinfo: SERIES_DATA, data: SERIES_DATA) -> None:
+    def __init__(self, investmentinfo: SERIES_DATA, data: SERIES_DATA) -> None:
 
-        self.name = investmentinfo.name
+        self.name = investmentinfo.Name
         self.investmentinfo = investmentinfo
         super().__init__(data, self.name, asset_type="Stock")
         self.beta = None

@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.stats import norm
 
 from fin.returns import weighted_mean_daily_returns
-from fin.finance_data_types import DATA_ARRAY, SERIES_ARRAY, FLOAT, INT, NUMERIC
+from fin.finance_data_types import DATA_ARRAY, SERIES_ARRAY, FLOAT, INT_STD, NUMERIC
 
 def weighted_mean_sum(
     means: SERIES_ARRAY[FLOAT], weights: SERIES_ARRAY[FLOAT]

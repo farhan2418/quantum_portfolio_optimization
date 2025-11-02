@@ -12,15 +12,15 @@ import numpy as np
 import pandas as pd
 
 from collections.abc import KeysView
-from numpy.typing import NDarray
+from numpy.typing import NDArray
 
 
 ELEMENT_TYPE = TypeVar('ELEMENT_TYPE')
 
 STD_DATETIME = str | datetime
-STD_ARRAY: TypeAlias = NDarray[ELEMENT_TYPE] | List[ELEMENT_TYPE]
-DATA_ARRAY: TypeAlias = NDarray[ELEMENT_TYPE] | pd.DataFrame
-SERIES_ARRAY: TypeAlias = NDarray[ELEMENT_TYPE] | pd.Series
+STD_ARRAY: TypeAlias = NDArray[ELEMENT_TYPE] | List[ELEMENT_TYPE]
+DATA_ARRAY: TypeAlias = NDArray[ELEMENT_TYPE] | pd.DataFrame
+SERIES_ARRAY: TypeAlias = NDArray[ELEMENT_TYPE] | pd.Series
 SERIES_DATA: TypeAlias = pd.Series | pd.DataFrame
 
 DICT_LIST_PASS: TypeAlias = DATA_ARRAY[ELEMENT_TYPE] | KeysView[ELEMENT_TYPE]

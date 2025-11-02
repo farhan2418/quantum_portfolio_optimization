@@ -27,8 +27,8 @@ import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
 
-from .fin.efficient_frontier import EfficientFrontier
-from .fin.finance_data_types import (
+from fin.efficient_frontier import EfficientFrontier
+from fin.finance_data_types import (
     STD_ARRAY,
     ELEMENT_TYPE, 
     FLOAT,
@@ -39,7 +39,7 @@ from .fin.finance_data_types import (
     SERIES_DATA
 )
 
-from .fin.quants import (
+from fin.quants import (
     weighted_mean_sum,
     weighted_std,
     weighted_mean_daily_returns,
@@ -47,15 +47,15 @@ from .fin.quants import (
     value_at_risk
 )
 
-from .fin.returns import (
+from fin.returns import (
     daily_returns,
     daily_log_returns,
     historical_mean_return,
     weighted_mean_daily_returns
 )
 
-from .fin.asset import Asset
-from .fin.stock import Stock
+from fin.asset import Asset
+from fin.stock import Stock
 
 
 class Portfolio:
@@ -165,7 +165,7 @@ class Portfolio:
         # as these details are not required for the simple/initial minimisation problem 
 
     def _update(self) -> None:
-        if not (self.portfolio.emoty or not self.stocks or self.data.empty):
+        if not (self.portfolio.empty or not self.stocks or self.data.empty):
             self.totalinvestment = self.portfolio.Allocation.sum()
             self.expected_return = self.comp_expected_return(freq = self.freq)
             self.volatility = self.comp_volatility(freq = self.freq)
@@ -199,6 +199,15 @@ class Portfolio:
         expected_return: FLOAT = weighted_mean_sum(pf_return_means.values, weights)
         self.expected_return = expected_return
         return expected_return
+    
+    def comp_sharpe(self) -> FLOAT:
+
+    # compute the Sharpe Ratio of the portfolio
+        sharpe: FLOAT = sharpe_ratio(
+            self.expected_return, self.volatility, self.risk_free_rate
+        )
+        self.sharpe = sharpe
+        return sharpe
 
     def comp_volatility(self, freq: INT_STD = 252) -> FLOAT:
         volatility: FLOAT = weighted_std(
@@ -220,6 +229,8 @@ class Portfolio:
         )
         self.var = var
         return var
+
+    
     ##  Eficient Frontier is pending
 
 _all_in = lambda l_1, l_2: all(ele in l_2 for ele in l_1)
@@ -249,8 +260,9 @@ def _yfinance_request(
             "(either as datetime object or as String in the format '%Y-%m-%d')."
         ) 
     try:
-        res: SERIES_DATA = yfinance.download(names, start=start_date, end=end_date)
-        if not isinstance(res.columns. pd.multiIndex) and len(names) > 0:
+        res: pd.DataFrame = yfinance.download(names, start=start_date, end=end_date)
+        if not isinstance(res.columns, pd.MultiIndex) and len(names) > 0:
+           
             stock_tuples = [(col, names[0]) for col in list(res.columns)]
             res.columns = pd.MultiIndex.from_tuples(stock_tuples)
 
@@ -260,6 +272,8 @@ def _yfinance_request(
             + str(ex)
         )
         raise ValueError(err) from ex
+    
+    return res
 
 def _generate_pfa(names: STD_ARRAY[str] | None = None, 
                   data: SERIES_DATA | None = None
@@ -282,7 +296,7 @@ def _generate_pfa(names: STD_ARRAY[str] | None = None,
         )
         stock_names = data.columns.tolist()
 
-        redundant_stocks: STD_ARRAY = [name.split("-")[0].strip() for name in stock_names]
+        redundant_stocks: STD_ARRAY = [name[1].split("-")[0].strip() for name in stock_names]
 
         seen_names = set()
         for name in redundant_stocks:
@@ -297,18 +311,69 @@ def _generate_pfa(names: STD_ARRAY[str] | None = None,
     weights = [1.0 / float(stocks_len) for _ in range(stocks_len)]
     return pd.DataFrame({"Allocation": weights, "Name": stock_names})
 
+def _get_stocks_data_columns(
+        data: pd.DataFrame, names: STD_ARRAY[str], cols: List[str] 
+) -> pd.DataFrame:
+    
+    reqcolnames: List[str] = []
+    colname:str = ''
+    firstlevel_columns: List[str] = []
+    # print(data.columns[0].replace(".", ""))
+    print(isinstance(data.columns, pd.MultiIndex))
 
-def _build_portfolio_from_df(data: SERIES_DATA, pf_allocation: SERIES_DATA | None = None) -> Portfolio:
+    for id, name in enumerate(names):
+        for col in cols:
+            if name in data.columns:
+                colname = name
+
+            elif isinstance(data.columns, pd.MultiIndex):
+                col = col.replace(".", "")
+                if col in data.columns:
+                    if not col in firstlevel_columns:
+                        firstlevel_columns.append(col)
+                    if name in data[col].columns:
+                        colname = name
+                    else:
+                        raise ValueError(
+                            "Could not find column labels in the second level of MultiIndex pd.DataFrame"
+                        )
+            else:
+                raise ValueError("Could not find column labels in the given dataframe.")
+            
+            reqcolnames.append(colname)
+
+    print(firstlevel_columns)
+    if isinstance(data.columns, pd.MultiIndex):
+        if len(firstlevel_columns) != 1:
+            raise ValueError(
+                "Error: format supported for now; quantity/value per stock "
+            )
+        data = data[firstlevel_columns[0]].loc[:, reqcolnames]
+
+    return data
+        
+def _build_portfolio_from_df(data: pd.DataFrame, 
+            pf_allocation: SERIES_DATA | None = None, 
+            data_columns: List[str] | None = None
+    ) -> Portfolio:
     data = data.astype(np.float64)
+    
     if pf_allocation is None:
         pf_allocation = _generate_pfa(data = data)
+    
+    if data_columns is None:
+        data_columns = ["Close"]
+    
+    pf_allocation = pf_allocation.astype({"Allocation": np.float64, "Name": str})
+    data = data.astype(np.float64)
+    data = _get_stocks_data_columns(data, pf_allocation.Name.values, data_columns)
 
 
     pf: Portfolio = Portfolio()
 
     for id in range(len(pf_allocation)):
         name: str = pf_allocation.iloc[id].Name
-        stock_data: SERIES_DATA = data.loc[:, [name]].copy(deep=True).squeeze()
+        stock_data: pd.DataFrame = data.loc[:, [name]].copy(deep=True).squeeze()
 
         pf.add_stock(
             Stock(investmentinfo =pf_allocation.iloc[id], data=stock_data), defer_update= True
@@ -331,9 +396,11 @@ def _build_portfolio_from_api(names: STD_ARRAY, pf_allocation: pd.DataFrame | No
             f"Value of {data_api} is not supported as of now"  + "choose `yfinance`."
         )
 
-    pf: Portfolio = _build_portfolio_from_df(
-        stock_data, pf_allocation
+    pf: Portfolio = _build_portfolio_from_df(data=
+        stock_data, pf_allocation=pf_allocation
     )
+
+    return pf
     
 def build_portfolio(**kwargs: Dict[str, Any]) -> Portfolio:
     required_args = str(
