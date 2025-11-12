@@ -6,7 +6,7 @@ important packages we use.
 import numbers
 
 from datetime import datetime
-from typing import List, TypeVar, TypeAlias
+from typing import List, TypeVar, TypeAlias, Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -28,6 +28,7 @@ DICT_LIST_PASS: TypeAlias = DATA_ARRAY[ELEMENT_TYPE] | KeysView[ELEMENT_TYPE]
 INT_STD: TypeAlias = numbers.Integral
 FLOAT: TypeAlias = np.floating | float
 NUMERIC: TypeAlias = numbers.Real
+LIST_OR_DICT = List[Optional[ELEMENT_TYPE]] |  Dict[str, ELEMENT_TYPE]
 
 
 

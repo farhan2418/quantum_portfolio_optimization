@@ -318,8 +318,6 @@ def _get_stocks_data_columns(
     reqcolnames: List[str] = []
     colname:str = ''
     firstlevel_columns: List[str] = []
-    # print(data.columns[0].replace(".", ""))
-    print(isinstance(data.columns, pd.MultiIndex))
 
     for id, name in enumerate(names):
         for col in cols:
@@ -342,7 +340,6 @@ def _get_stocks_data_columns(
             
             reqcolnames.append(colname)
 
-    print(firstlevel_columns)
     if isinstance(data.columns, pd.MultiIndex):
         if len(firstlevel_columns) != 1:
             raise ValueError(
