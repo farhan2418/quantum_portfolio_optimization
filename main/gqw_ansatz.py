@@ -130,7 +130,7 @@ class GQWAnsatz(BlueprintCircuit):
 
     @property
     def operators(self) -> list:
-        return [self.driver, self.cost_operator]
+        return [self.cost_operator, self.driver]
     
     @operators.setter
     def operators(self, operators=None) -> None:
@@ -203,10 +203,10 @@ class GQWAnsatz(BlueprintCircuit):
             for op in self.operators:
                 
                 if self._is_driver(op.paulis):
-                    evolved = self._evolve_operator(op, gamma)
+                    evolved = self._evolve_operator(op, gamma, label = 'Driver')
                     
                 else:
-                    evolved = self._evolve_operator(op, c)
+                    evolved = self._evolve_operator(op, c, label = 'Cost')
 
 
                 circuit.compose(evolved, circuit.qubits, inplace=True)
@@ -232,9 +232,10 @@ class GQWAnsatz(BlueprintCircuit):
         
         return False
     
-    def _evolve_operator(self, operator: SparsePauliOp, time):
-        evolution = LieTrotter() if self._evolution is None else self._evolution
-        gate = PauliEvolutionGate(operator, time, synthesis=evolution)
+    def _evolve_operator(self, operator: SparsePauliOp, time, label: str| None = None):
+        # evolution = LieTrotter() if self._evolution is None else self._evolution
+        evolution = SuzukiTrotter() if self._evolution is None else self._evolution
+        gate = PauliEvolutionGate(operator, time, synthesis=evolution, label=label)
         evolved = QuantumCircuit(operator.num_qubits)
         if not self.flatten:
             evolved.append(gate, evolved.qubits)

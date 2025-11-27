@@ -113,18 +113,18 @@ class GQW(VariationalAlgorithm, SamplingMinimumEigensolver):
         # assuming the passed lambda vectors are in order   
         inclusie_points = initial_point[0: 4]
         exclusive_points = initial_point[4:6]
-        for i, l in enumerate(inclusie_points):
-            if not (0.0 <= l <= 1.0):
+        for i, lam in enumerate(inclusie_points):
+            if not (0.0 <= lam <= 1.0):
                 raise ValueError(
                     "lambda points l1, l2, l3, l4 shold be in limit [0, 1]",
-                    f"but {l} val of index {i} is not "
+                    f"but {lam} val of index {i} is not "
                 )
             
-        for l in exclusive_points:
-            if not (0.0 < l < 1.0):
+        for j in exclusive_points:
+            if not (0.0 < j < 1.0):
                 raise ValueError(
                     "lambda points l5, l6 should be in limit (0, 1)",
-                    f"but {l} is not"
+                    f"but {j} is not"
                 )
         return initial_point
 
@@ -204,18 +204,21 @@ class GQW(VariationalAlgorithm, SamplingMinimumEigensolver):
         )
 
         start_time = time()
+        bounds = [(0, 1)] * len(initial_lambda)
 
         if callable(self.optimizer):
             optimizer_result = self.optimizer(
                 fun = evaluate_energy,
                 x0 = initial_lambda,
                 jac = None,
+                bounds= bounds
             )
 
         else:
             optimizer_result = self.optimizer.minimize(
                 fun = evaluate_energy,
                 x0 = initial_lambda,
+                bounds= bounds
             )
         
         optimizer_time = time() - start_time
@@ -227,7 +230,7 @@ class GQW(VariationalAlgorithm, SamplingMinimumEigensolver):
         )
 
         delta_T = self.time / self.reps
-        optimal_params  = [delta_T *
+        optimal_params  = [-1*delta_T *
             calc_gamma( i * delta_T, self.time, optimizer_result.x) for i in range (self.reps)
             ] + [delta_T for _ in range(self.reps)] 
 
